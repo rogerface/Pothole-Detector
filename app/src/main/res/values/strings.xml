@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Pothole detector</string>
+    <string name="app_name">PotholeDetector</string>
+    <string name="permission_denied">Permission denied!</string>
+    <string name="gps_unavailable">GPS Reading: Unable to get location</string>
+    <string name="gps_error">GPS Reading: Error getting location</string>
+    <string name="gps_coordinates">GPS Reading:\nLat: %1$.6f, Lon: %2$.6f</string>
 </resources>
