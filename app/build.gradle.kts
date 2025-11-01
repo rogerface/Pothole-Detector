@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-     id("org.jetbrains.kotlin.plugin.compose") version "2.0.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.20"
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -10,20 +11,20 @@ android {
 
     defaultConfig {
         applicationId = "com.example.potholedetector"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
     }
 
     buildFeatures {
-        viewBinding = true  // Enable View Binding
-         compose = true
+        viewBinding = true
+        compose = true
     }
 
     composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.3" // compatible with AGP 8.13
-}
+        kotlinCompilerExtensionVersion = "1.5.3"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -42,16 +43,21 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity-ktx:1.8.2")
 
-    // Jetpack Compose
+    // Jetpack Compose (optional for UI)
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.ui:ui:1.6.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
-
-    // Use lifecycle-runtime-compose 2.6.2 (stable)
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
 
     // Google Play Services - Location
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    // ✅ Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+
+    // ✅ Firebase Realtime Database (and optional Analytics)
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 }
