@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "918931322083",
+    "firebase_url": "https://potholedetector-dd0d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "potholedetector-dd0d1",
+    "storage_bucket": "potholedetector-dd0d1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918931322083:android:524390bdeecbf25dbe01d6",
+        "android_client_info": {
+          "package_name": "com.example.potholedetector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnVMAISv0f1rnCpIOaBsAg9mx5sDZ-wAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

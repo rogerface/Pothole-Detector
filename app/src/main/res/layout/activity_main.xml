@@ -1,29 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#F2F2F7">
 
-    <!-- GPS display -->
-    <TextView
-        android:id="@+id/gpsText"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GPS Reading: Waiting..."
-        android:textSize="20sp"
-        android:textColor="#000000"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical">
 
-    <!-- Accelerometer display -->
-    <TextView
-        android:id="@+id/accelText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Accelerometer: Waiting for data..."
-        android:textSize="18sp"
-        android:textColor="#000000"/>
+        <!-- App Title -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pothole Detector"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textColor="#000000" />
+        <!-- GPS CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_launcher_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="20dp">
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS Location"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/gpsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Waiting..."
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:textColor="#333333"/>
+        </LinearLayout>
+
+        <!-- ACCELEROMETER CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_launcher_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accelerometer"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/accelText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X=0.0  Y=0.0  Z=0.0"
+                android:layout_marginTop="8dp"
+                android:textSize="18sp"
+                android:textColor="#333333"/>
+        </LinearLayout>
+
+        <!-- MAGNITUDE CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_launcher_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Magnitude"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/magnitudeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Magnitude: 0.0"
+                android:layout_marginTop="8dp"
+                android:textSize="18sp"
+                android:textColor="#333333"/>
+
+            <TextView
+                android:id="@+id/thresholdText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pothole Detected"
+                android:layout_marginTop="6dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000"/>
+        </LinearLayout>
+
+        <!-- TIMESTAMP CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_launcher_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last Detection Timestamp"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/timestampText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No detections yet"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:textColor="#333333"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/firebaseLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Open Firebase Pothole Data"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#0000EE"
+            android:paddingTop="20dp"
+            android:autoLink="web"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </LinearLayout>
+</ScrollView>
