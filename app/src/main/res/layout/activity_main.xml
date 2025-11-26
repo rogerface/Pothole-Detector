@@ -10,7 +10,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- App Title -->
         <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
@@ -21,7 +20,7 @@
             android:padding="10dp"
             android:gravity="center"
             android:textColor="#000000" />
-        <!-- GPS CARD -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,7 +47,6 @@
                 android:textColor="#333333"/>
         </LinearLayout>
 
-        <!-- ACCELEROMETER CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,7 +73,6 @@
                 android:textColor="#333333"/>
         </LinearLayout>
 
-        <!-- MAGNITUDE CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -110,9 +107,18 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/speedBreakerText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Speed Breaker Detected"
+                android:layout_marginTop="4dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000"/>
         </LinearLayout>
 
-        <!-- TIMESTAMP CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

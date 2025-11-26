@@ -24,25 +24,46 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
+    private var gyroscope: Sensor? = null // New Sensor
 
     // UI Elements
     private lateinit var accelText: TextView
     private lateinit var gpsText: TextView
     private lateinit var magnitudeText: TextView
     private lateinit var thresholdText: TextView
+    private lateinit var speedBreakerText: TextView // New UI Element
     private lateinit var timestampText: TextView
 
     private val LOCATION_REQUEST_CODE = 1001
-    private val SHAKE_THRESHOLD = 18.0f
+
+    // TUNED THRESHOLDS
+    // Potholes are sharp/hard hits (> 18)
+    // TUNED THRESHOLDS
+    // Potholes are sharp/hard hits (> 20.0f)
+    private val POTHOLE_THRESHOLD = 20.0f // RAISED
+
+    // Speed breakers are softer (> 12.0f) but NOT as hard as potholes (< 16.0f)
+    private val SPEED_BREAKER_MIN_THRESHOLD = 12.0f // RAISED
+    private val SPEED_BREAKER_MAX_THRESHOLD = 16.0f // RAISED (Wider Range)
+
+    // Increased Rotation Threshold:
+    // Speed Breakers PITCH the car (approx > 3.0 rad/s)
+    private val ROTATION_THRESHOLD = 3.0f // RAISED
     private val DETECTION_COOLDOWN = 2000 // 2 seconds
     private var lastDetectionTime = 0L
+
+    // ... rest of your class code ...
+
+    // Current Sensor Values for Fusion
+    private var currentAccelMagnitude = 0f
+    private var currentGyroMagnitude = 0f
 
     // Firebase Reference
     private val database = FirebaseDatabase.getInstance().reference
 
-    // Handler to reset "Pothole Detected" text color
+    // Handler to reset text color
     private val handler = Handler()
-    private val RED_DISPLAY_DURATION = 3000L // 3 seconds
+    private val ALERT_DISPLAY_DURATION = 3000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +74,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         gpsText = findViewById(R.id.gpsText)
         magnitudeText = findViewById(R.id.magnitudeText)
         thresholdText = findViewById(R.id.thresholdText)
+        speedBreakerText = findViewById(R.id.speedBreakerText) // Init new text
         timestampText = findViewById(R.id.timestampText)
 
         val firebaseLink: TextView = findViewById(R.id.firebaseLink)
@@ -65,9 +87,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Sensor Setup
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-
-        // Firebase test write
-        database.child("test").setValue("Hello from Shradha’s PotholeDetector!")
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) // Get Gyro
 
         requestLocationPermission()
     }
@@ -90,6 +110,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         accelerometer?.also {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
         }
+        gyroscope?.also {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
     }
 
     override fun onPause() {
@@ -98,43 +121,89 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
+        if (event == null) return
 
-        if (event?.sensor?.type != Sensor.TYPE_ACCELEROMETER) return
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
 
-        val x = event.values[0]
-        val y = event.values[1]
-        val z = event.values[2]
+            currentAccelMagnitude = sqrt(x * x + y * y + z * z)
+            accelText.text = "Accelerometer:\nX=%.2f\nY=%.2f\nZ=%.2f".format(x, y, z)
+            magnitudeText.text = "Magnitude: %.2f".format(currentAccelMagnitude)
 
-        val magnitude = sqrt(x * x + y * y + z * z)
-        accelText.text = "Accelerometer:\nX=%.2f\nY=%.2f\nZ=%.2f".format(x, y, z)
-        magnitudeText.text = "Magnitude: %.2f".format(magnitude)
+            // Trigger check logic on Accel updates
+            checkForHazard()
+        }
+        else if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
+            val gx = event.values[0]
+            val gy = event.values[1]
+            val gz = event.values[2]
 
+            // Calculate total rotation magnitude
+            currentGyroMagnitude = sqrt(gx * gx + gy * gy + gz * gz)
+        }
+    }
+
+    private fun checkForHazard() {
         val now = System.currentTimeMillis()
+        if (now - lastDetectionTime < DETECTION_COOLDOWN) return
 
-        if (magnitude > SHAKE_THRESHOLD && now - lastDetectionTime > DETECTION_COOLDOWN) {
+        var detectedType = ""
+
+        // 1. POTHOLE CHECK (Priority 1)
+        // High Impact. We don't care about rotation here.
+        if (currentAccelMagnitude > POTHOLE_THRESHOLD) {
+            detectedType = "POTHOLE"
+        }
+
+        // 2. SPEED BREAKER CHECK (Priority 2)
+        // We add a "Ceiling" (MAX_THRESHOLD).
+        // If the impact is > 16.0, it's too hard to be a speed breaker,
+        // so we ignore it (it's likely a pothole that just missed the 18.0 cutoff).
+        else if (currentAccelMagnitude > SPEED_BREAKER_MIN_THRESHOLD &&
+            currentAccelMagnitude < SPEED_BREAKER_MAX_THRESHOLD &&
+            currentGyroMagnitude > ROTATION_THRESHOLD) {
+
+            detectedType = "SPEED_BREAKER"
+        }
+
+        if (detectedType.isNotEmpty()) {
             lastDetectionTime = now
-            val detectionTimestamp = now // unified timestamp
+            triggerDetectionUI(detectedType, now)
+        }
+    }
 
-            // Update UI immediately
+    private fun triggerDetectionUI(type: String, timestamp: Long) {
+        timestampText.text = "Detected at: $timestamp"
+
+        if (type == "POTHOLE") {
             thresholdText.text = "POTHOLE DETECTED"
-            thresholdText.setTextColor(0xFFFF0000.toInt())
-            timestampText.text = "Detected at: $detectionTimestamp"
+            thresholdText.setTextColor(0xFFFF0000.toInt()) // Red
             Toast.makeText(this, "Pothole detected!", Toast.LENGTH_SHORT).show()
+        }
+        else if (type == "SPEED_BREAKER") {
+            speedBreakerText.text = "SPEED BREAKER DETECTED"
+            speedBreakerText.setTextColor(0xFFFF8800.toInt()) // Orange
+            Toast.makeText(this, "Speed Breaker detected!", Toast.LENGTH_SHORT).show()
+        }
 
-            // Reset the red color after 3 seconds
-            handler.postDelayed({
-                thresholdText.text = "Pothole Not Detected"
-                thresholdText.setTextColor(0xFF000000.toInt())
-            }, RED_DISPLAY_DURATION)
+        // Reset UI after delay
+        handler.postDelayed({
+            thresholdText.text = "Pothole Not Detected"
+            thresholdText.setTextColor(0xFF000000.toInt())
 
-            // Get location and save to Firebase
-            getCurrentLocation { location ->
-                if (location != null) {
-                    gpsText.text = "Lat: ${location.latitude}, Lon: ${location.longitude}"
-                    savePothole(location.latitude, location.longitude, detectionTimestamp)
-                } else {
-                    gpsText.text = "Location unavailable"
-                }
+            speedBreakerText.text = "Speed Breaker Not Detected"
+            speedBreakerText.setTextColor(0xFF000000.toInt())
+        }, ALERT_DISPLAY_DURATION)
+
+        // Save to Firebase
+        getCurrentLocation { location ->
+            if (location != null) {
+                gpsText.text = "Lat: ${location.latitude}, Lon: ${location.longitude}"
+                saveHazard(type, location.latitude, location.longitude, timestamp)
+            } else {
+                gpsText.text = "Location unavailable"
             }
         }
     }
@@ -154,18 +223,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             .addOnFailureListener { callback(null) }
     }
 
-    private fun savePothole(lat: Double, lon: Double, timestamp: Long) {
-        val potholeData = mapOf(
+    // Updated to accept 'type'
+    private fun saveHazard(type: String, lat: Double, lon: Double, timestamp: Long) {
+        val hazardData = mapOf(
+            "type" to type,
             "latitude" to lat,
             "longitude" to lon,
             "timestamp" to timestamp
         )
 
-        database.child("potholes").push()
-            .setValue(potholeData)
-            .addOnSuccessListener { Log.d("RealtimeDB", "Pothole saved!") }
+        database.child("hazards").push()
+            .setValue(hazardData)
+            .addOnSuccessListener { Log.d("RealtimeDB", "$type saved!") }
             .addOnFailureListener { e ->
-                Log.e("RealtimeDB", "Error saving pothole", e)
+                Log.e("RealtimeDB", "Error saving data", e)
             }
     }
 
